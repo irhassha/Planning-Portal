@@ -244,63 +244,63 @@
         const SUPABASE_URL = 'https://ipkgtglrhnocatrqfsda.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0';
         
-        // Inisialisasi koneksi ke Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Perbaikan: Menggunakan nama 'supabaseClient' agar tidak bentrok dengan sistem
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Fungsi Cek Status Login Otomatis & Ganti Tampilan
-        async function updateUI() {
-            const { data: { user } } = await supabase.auth.getUser();
-            const loginForm = document.getElementById('login-form-id');
-            const desktopApps = document.getElementById('desktop-apps');
+    // Fungsi Cek Status Login Otomatis & Ganti Tampilan
+    async function updateUI() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const loginForm = document.getElementById('login-form-id');
+        const desktopApps = document.getElementById('desktop-apps');
 
-            if (user) {
-                // Jika user berhasil login, sembunyikan form, tampilkan aplikasi
-                loginForm.style.display = 'none';
-                desktopApps.style.display = 'block';
-            } else {
-                // Jika belum login, tampilkan form, sembunyikan aplikasi
-                loginForm.style.display = 'block';
-                desktopApps.style.display = 'none';
-            }
+        if (user) {
+            // Jika user berhasil login
+            loginForm.style.display = 'none';
+            desktopApps.style.display = 'block';
+        } else {
+            // Jika belum login
+            loginForm.style.display = 'block';
+            desktopApps.style.display = 'none';
+        }
+    }
+
+    // Fungsi untuk Tombol Masuk
+    window.handleLogin = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+            alert("Mohon isi Email dan Password terlebih dahulu!");
+            return;
         }
 
-        // Fungsi untuk Tombol Masuk
-        window.handleLogin = async () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // Proses login ke Supabase
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
 
-            if (!email || !password) {
-                alert("Mohon isi Email dan Password terlebih dahulu!");
-                return;
-            }
+        if (error) {
+            alert("Login Gagal: " + error.message);
+        } else {
+            // Jika berhasil, perbarui tampilan ke dashboard
+            updateUI();
+        }
+    };
 
-            // Proses login ke Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+    // Fungsi untuk Tombol Keluar
+    window.handleLogout = async () => {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            alert("Gagal keluar: " + error.message);
+        } else {
+            alert("Berhasil keluar!");
+            updateUI(); 
+        }
+    };
 
-            if (error) {
-                alert("Login Gagal: " + error.message);
-            } else {
-                // Jika berhasil, panggil fungsi update tampilan
-                updateUI();
-            }
-        };
-
-        // Fungsi untuk Tombol Keluar
-        window.handleLogout = async () => {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                alert("Gagal keluar: " + error.message);
-            } else {
-                alert("Berhasil keluar!");
-                updateUI(); // Kembalikan tampilan ke form login
-            }
-        };
-
-        // Jalankan fungsi cek status secara otomatis setiap kali halaman direfresh
-        updateUI();
-    </script>
+    // Jalankan pengecekan login saat web pertama kali dibuka
+    updateUI();
+</script>
 </body>
 </html>
