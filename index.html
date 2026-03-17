@@ -19,7 +19,32 @@
         <input type="password" id="password" placeholder="Password"><br><br>
         <button onclick="login()">Masuk</button>
     </div>
+    
+<div id="desktop-apps" style="display: none; padding: 20px; text-align: center;">
+    <h2>Selamat Datang di Planning Portal</h2>
+    
+    <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+        
+        <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" style="text-decoration: none; color: black; width: 100px;">
+            <div style="background: #007bff; width: 70px; height: 70px; border-radius: 15px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px;">
+                🏗️
+            </div>
+            <span>Yard Planning</span>
+        </a>
 
+        <a href="https://username.github.io/app-kedua/" target="_blank" style="text-decoration: none; color: black; width: 100px;">
+            <div style="background: #28a745; width: 70px; height: 70px; border-radius: 15px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 30px;">
+                📊
+            </div>
+            <span>Data Vessel</span>
+        </a>
+
+    </div>
+
+    <br><br>
+    <button onclick="logout()" style="background: red; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Keluar</button>
+</div>
+    
     <div id="desktop" class="desktop">
         <a href="https://username.github.io/app-1" class="app-icon">
             <img src="icon1.png">
@@ -58,18 +83,28 @@
                 .catch(error => alert("Login Gagal: " + error.message));
         };
 
-        // Cek Status Login (Auto-update tampilan)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('desktop').style.display = 'grid';
-            } else {
-                document.getElementById('login-form').style.display = 'block';
-                document.getElementById('desktop').style.display = 'none';
-            }
-        });
+// Cek Status Login Otomatis
+onAuthStateChanged(auth, (user) => {
+    const loginForm = document.getElementById('login-form-id'); // Ganti ID sesuai form login Anda
+    const desktopApps = document.getElementById('desktop-apps');
 
-        window.logout = () => signOut(auth);
+    if (user) {
+        // Jika sudah login
+        loginForm.style.display = 'none';
+        desktopApps.style.display = 'block';
+    } else {
+        // Jika belum login / logout
+        loginForm.style.display = 'block';
+        desktopApps.style.display = 'none';
+    }
+});
+
+// Fungsi Logout
+window.logout = () => {
+    signOut(auth).then(() => {
+        alert("Berhasil keluar!");
+    });
+};
     </script>
 </body>
 </html>
