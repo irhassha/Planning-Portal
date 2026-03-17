@@ -234,7 +234,73 @@
                     <i class="fa-solid fa-file-export"></i> </div>
                 <span class="app-name">Movins Converter</span>
             </a>
+            
+<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+            <h3 style="font-size: 1rem; margin-bottom: 15px;">☁️ Upload Data Master</h3>
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+                
+                <input type="file" id="fileInput" style="display: none;" onchange="document.getElementById('fileNameDisplay').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih'">
+                
+                <label for="fileInput" class="btn" style="background: rgba(255,255,255,0.3); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.5); cursor: pointer; padding: 10px 15px; margin-top: 0;">
+                    <i class="fa-solid fa-folder-open"></i> Pilih File
+                </label>
+                
+                <button class="btn" onclick="handleUpload()" style="padding: 10px 15px; margin-top: 0;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload & Sinkron
+                </button>
+            </div>
+            <p id="fileNameDisplay" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">Belum ada file dipilih</p>
+        </div>
+        ```
 
+### 2. Tambahkan Fungsi JavaScript untuk Upload
+Di bagian paling bawah file `index.html` Anda, tepat sebelum tag `</script>`, tambahkan fungsi `handleUpload` ini:
+
+```javascript
+        // Fungsi untuk Upload File & Simpan Link ke Database
+        window.handleUpload = async () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert("Pilih file terlebih dahulu!");
+                return;
+            }
+
+            // Bikin nama unik agar tidak bentrok jika nama file sama
+            const fileName = `${Date.now()}_${file.name}`;
+            alert("Sedang mengupload... Mohon tunggu sebentar.");
+
+            // 1. Upload ke Storage Bucket 'uploads'
+            const { error: uploadError } = await supabaseClient.storage
+                .from('uploads')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                alert("Gagal upload: " + uploadError.message);
+                return;
+            }
+
+            // 2. Ambil Link Publik file tersebut
+            const { data: urlData } = supabaseClient.storage
+                .from('uploads')
+                .getPublicUrl(fileName);
+
+            // 3. Simpan Link-nya ke tabel 'shared_files' di database
+            const { error: dbError } = await supabaseClient.from('shared_files')
+                .insert([
+                    { name: file.name, url: urlData.publicUrl }
+                ]);
+
+            if (dbError) {
+                alert("Gagal simpan link: " + dbError.message);
+            } else {
+                alert("✅ Mantap! File berhasil diupload dan tersinkron ke semua aplikasi.");
+                fileInput.value = ""; // Reset form
+                document.getElementById('fileNameDisplay').innerText = "Belum ada file dipilih";
+            }
+        };
+            
         </div>
 
         <button class="btn logout-btn" onclick="handleLogout()">Keluar</button>
