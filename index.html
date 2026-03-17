@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>My App Portal</title>
+    <style>
+        /* Desain Grid Ikon Desktop */
+        .desktop { display: none; grid-template-columns: repeat(auto-fill, 100px); gap: 20px; padding: 20px; }
+        .app-icon { text-align: center; cursor: pointer; text-decoration: none; color: black; }
+        .app-icon img { width: 60px; height: 60px; border-radius: 12px; }
+        #login-form { margin: 50px auto; width: 300px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="login-form">
+        <h2>Login Portal</h2>
+        <input type="email" id="email" placeholder="Email"><br><br>
+        <input type="password" id="password" placeholder="Password"><br><br>
+        <button onclick="login()">Masuk</button>
+    </div>
+
+    <div id="desktop" class="desktop">
+        <a href="https://username.github.io/app-1" class="app-icon">
+            <img src="icon1.png">
+            <p>App 1</p>
+        </a>
+        <a href="https://username.github.io/app-2" class="app-icon">
+            <img src="icon2.png">
+            <p>App 2</p>
+        </a>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+
+        // TEMPELKAN firebaseConfig ANDA DI SINI
+        const firebaseConfig = {
+            apiKey: "AIza...",
+            authDomain: "project-anda.firebaseapp.com",
+            projectId: "project-anda",
+            storageBucket: "project-anda.appspot.com",
+            messagingSenderId: "12345",
+            appId: "1:12345:web:abc"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Fungsi Login
+        window.login = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch(error => alert("Login Gagal: " + error.message));
+        };
+
+        // Cek Status Login (Auto-update tampilan)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('desktop').style.display = 'grid';
+            } else {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('desktop').style.display = 'none';
+            }
+        });
+
+        window.logout = () => signOut(auth);
+    </script>
+</body>
+</html>
