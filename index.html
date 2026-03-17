@@ -35,17 +35,18 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-
-        // TEMPELKAN firebaseConfig ANDA DI SINI
+        
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIza...",
-            authDomain: "project-anda.firebaseapp.com",
-            projectId: "project-anda",
-            storageBucket: "project-anda.appspot.com",
-            messagingSenderId: "12345",
-            appId: "1:12345:web:abc"
+          apiKey: "AIzaSyAFmv0ZCMGyqEijtH7CGTy6gwih_jTwHC4",
+          authDomain: "planning-portal-88622.firebaseapp.com",
+          projectId: "planning-portal-88622",
+          storageBucket: "planning-portal-88622.firebasestorage.app",
+          messagingSenderId: "382209491506",
+          appId: "1:382209491506:web:442358253e523ec07c322b"
         };
-
+        
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
