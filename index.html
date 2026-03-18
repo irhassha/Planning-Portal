@@ -18,6 +18,7 @@
             --shadow-hover: 0 18px 36px rgba(16, 33, 61, 0.24);
             --accent: #2650ba;
             --accent-soft: rgba(38, 80, 186, 0.12);
+            --danger-soft: rgba(255, 92, 114, 0.16);
         }
 
         * {
@@ -267,14 +268,49 @@
             display: none;
         }
 
-        #file-input {
-            margin-top: 0;
-            margin-bottom: 0;
-            max-width: 210px;
-            padding: 10px 12px;
+        .file-picker {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: min(320px, 100%);
+            padding: 8px 10px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.62);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        #file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-picker-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(38, 80, 186, 0.14), rgba(79, 140, 255, 0.2));
+            color: var(--accent);
+            font-size: 0.88rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .file-picker-name {
+            display: block;
+            min-width: 0;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .upload-actions {
@@ -302,6 +338,12 @@
             border: 1px solid rgba(255, 255, 255, 0.35);
             width: fit-content;
             max-width: 100%;
+        }
+
+        .session-note {
+            margin: 16px 0 0;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
         }
 
         .floating-orb {
@@ -358,6 +400,16 @@
                 justify-content: flex-start;
             }
 
+            .upload-inline {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .file-picker {
+                width: 100%;
+                min-width: 0;
+            }
+
             .apps-grid {
                 grid-template-columns: repeat(2, minmax(110px, 1fr));
             }
@@ -390,8 +442,15 @@
                 <div class="upload-card">
                     <p class="upload-title">Upload Shared File</p>
                     <div class="upload-inline">
-                        <input type="file" id="file-input">
-                        <button id="upload-btn" class="btn upload-btn" onclick="uploadFile()">Upload</button>
+                        <label class="file-picker" for="file-input">
+                            <input type="file" id="file-input" onchange="handleFileSelection()">
+                            <span class="file-picker-button">
+                                <i class="fa-solid fa-paperclip"></i>
+                                Choose file
+                            </span>
+                            <span id="file-name" class="file-picker-name">No file selected</span>
+                        </label>
+                        <button id="upload-btn" class="btn upload-btn" onclick="handleUpload()">Upload</button>
                     </div>
                 </div>
                 <button class="btn logout-btn" onclick="logout()">Logout</button>
@@ -399,6 +458,7 @@
         </div>
 
         <p id="upload-status"></p>
+        <p class="session-note">For security, your session will automatically sign out after 3 hours.</p>
 
         <div class="apps-grid">
             <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
@@ -420,21 +480,61 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = "https://ipkgtglrhnocatrqfsda.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0";
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginForm = document.getElementById('login-form-id');
         const desktopApps = document.getElementById('desktop-apps');
         const welcomeNote = document.getElementById('welcome-note');
+        const fileNameLabel = document.getElementById('file-name');
+        const AUTO_LOGOUT_MS = 3 * 60 * 60 * 1000;
+        const LOGIN_TIME_KEY = 'planning_portal_login_time';
+        let autoLogoutTimerId;
 
         const getWelcomeName = (email = '') => {
-            const [, domainPart = 'User'] = email.split('@');
-            return domainPart || 'User';
+            const [userPart = 'User'] = email.split('@');
+            return userPart || 'User';
+        };
+
+        const clearAutoLogoutTimer = () => {
+            if (autoLogoutTimerId) {
+                window.clearTimeout(autoLogoutTimerId);
+                autoLogoutTimerId = undefined;
+            }
+        };
+
+        const startAutoLogoutTimer = async (session) => {
+            clearAutoLogoutTimer();
+
+            if (!session?.user) {
+                localStorage.removeItem(LOGIN_TIME_KEY);
+                return;
+            }
+
+            const storedLoginTime = Number(localStorage.getItem(LOGIN_TIME_KEY));
+            const derivedLoginTime = Number.isFinite(storedLoginTime) && storedLoginTime > 0
+                ? storedLoginTime
+                : new Date(session.user.last_sign_in_at || Date.now()).getTime();
+
+            localStorage.setItem(LOGIN_TIME_KEY, String(derivedLoginTime));
+
+            const remainingTime = AUTO_LOGOUT_MS - (Date.now() - derivedLoginTime);
+
+            if (remainingTime <= 0) {
+                await supabaseClient.auth.signOut();
+                alert('Your session expired after 3 hours. Please sign in again.');
+                return;
+            }
+
+            autoLogoutTimerId = window.setTimeout(async () => {
+                await supabaseClient.auth.signOut();
+                alert('Your session expired after 3 hours. Please sign in again.');
+            }, remainingTime);
         };
 
         const updateAuthView = (session) => {
             if (session?.user) {
-                welcomeNote.textContent = `Welcome, ${getWelcomeName(session.user.email)}`;
+                welcomeNote.textContent = `Welcome ${getWelcomeName(session.user.email)}!`;
                 loginForm.style.display = 'none';
                 desktopApps.style.display = 'block';
                 return;
@@ -445,31 +545,51 @@
             desktopApps.style.display = 'none';
         };
 
-        // Fungsi Login
+        window.handleFileSelection = () => {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files?.[0];
+            fileNameLabel.textContent = file ? file.name : 'No file selected';
+        };
+
+        // Sign-in flow
         window.login = async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
 
-            const { error } = await supabase.auth.signInWithPassword({
+            const { error } = await supabaseClient.auth.signInWithPassword({
                 email,
                 password: pass
             });
 
             if (error) {
                 alert("Sign in failed: " + error.message);
+                return;
             }
+
+            localStorage.setItem(LOGIN_TIME_KEY, String(Date.now()));
         };
 
-        const { data: sessionData } = await supabase.auth.getSession();
+        const { data: sessionData } = await supabaseClient.auth.getSession();
         updateAuthView(sessionData.session);
+        await startAutoLogoutTimer(sessionData.session);
 
-        supabase.auth.onAuthStateChange((_event, session) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN') {
+                localStorage.setItem(LOGIN_TIME_KEY, String(Date.now()));
+            }
+
+            if (event === 'SIGNED_OUT') {
+                clearAutoLogoutTimer();
+                localStorage.removeItem(LOGIN_TIME_KEY);
+            }
+
             updateAuthView(session);
+            await startAutoLogoutTimer(session);
         });
 
-        // Fungsi Logout
+        // Sign-out flow
         window.logout = async () => {
-            const { error } = await supabase.auth.signOut();
+            const { error } = await supabaseClient.auth.signOut();
 
             if (error) {
                 alert("Sign out failed: " + error.message);
@@ -479,7 +599,7 @@
             alert("Signed out successfully.");
         };
 
-        window.uploadFile = async () => {
+        window.handleUpload = async () => {
             const fileInput = document.getElementById('file-input');
             const uploadButton = document.getElementById('upload-btn');
             const uploadStatus = document.getElementById('upload-status');
@@ -490,31 +610,62 @@
                 return;
             }
 
-            const uniqueFileName = `${Date.now()}_${file.name}`;
             uploadButton.disabled = true;
             uploadButton.textContent = 'Uploading...';
             uploadStatus.textContent = 'Uploading file and saving record...';
 
             try {
-                const { error: uploadError } = await supabase
+                const { data: existingFiles, error: listError } = await supabaseClient
                     .storage
                     .from('uploads')
-                    .upload(uniqueFileName, file, { upsert: false });
+                    .list();
 
-                if (uploadError) {
-                    throw uploadError;
+                if (listError) {
+                    console.error('Cleanup list failed:', listError);
                 }
 
-                const { error: insertError } = await supabase
+                if (existingFiles?.length > 0) {
+                    const fileNames = existingFiles.map(({ name }) => name).filter(Boolean);
+
+                    if (fileNames.length > 0) {
+                        const { error: removeError } = await supabaseClient
+                            .storage
+                            .from('uploads')
+                            .remove(fileNames);
+
+                        if (removeError) {
+                            console.error('Cleanup remove failed:', removeError);
+                        }
+                    }
+                }
+
+                const fileName = `${Date.now()}_${file.name}`;
+
+                const { error: uploadError } = await supabaseClient
+                    .storage
+                    .from('uploads')
+                    .upload(fileName, file);
+
+                if (uploadError) {
+                    alert(`Upload failed: ${uploadError.message}`);
+                    uploadStatus.textContent = 'Upload failed.';
+                    uploadButton.disabled = false;
+                    uploadButton.textContent = 'Upload';
+                    return;
+                }
+
+                const { error: insertError } = await supabaseClient
                     .from('shared_files')
-                    .insert({ url: uniqueFileName });
+                    .insert([{ url: fileName }]);
 
                 if (insertError) {
                     throw insertError;
                 }
 
                 fileInput.value = '';
+                fileNameLabel.textContent = 'No file selected';
                 uploadStatus.textContent = 'Upload completed successfully.';
+                alert('File uploaded successfully and old files were cleaned up');
             } catch (error) {
                 uploadStatus.textContent = `Upload failed: ${error.message}`;
             } finally {
