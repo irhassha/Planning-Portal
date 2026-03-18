@@ -6,7 +6,7 @@
     <title>Planning Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
@@ -16,6 +16,8 @@
             --text-secondary: rgba(16, 33, 61, 0.72);
             --shadow-soft: 0 12px 32px rgba(32, 45, 80, 0.2);
             --shadow-hover: 0 18px 36px rgba(16, 33, 61, 0.24);
+            --accent: #2650ba;
+            --accent-soft: rgba(38, 80, 186, 0.12);
         }
 
         * {
@@ -25,7 +27,7 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-primary);
             display: flex;
             align-items: center;
@@ -117,14 +119,47 @@
         #desktop-apps {
             display: none;
             padding: 34px 28px;
-            text-align: center;
+            text-align: left;
+        }
+
+        .desktop-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .hero-copy {
+            flex: 1;
+        }
+
+        .welcome-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 18px rgba(32, 45, 80, 0.1);
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .hero-copy h2 {
+            margin-bottom: 10px;
         }
 
         .subtitle {
-            margin-top: -8px;
-            margin-bottom: 26px;
+            margin-top: 0;
+            margin-bottom: 0;
             color: var(--text-secondary);
             font-weight: 400;
+            max-width: 520px;
+            line-height: 1.6;
         }
 
         .apps-grid {
@@ -143,7 +178,7 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, filter 0.3s ease;
         }
 
         .app-squircle {
@@ -157,7 +192,7 @@
             justify-content: center;
             box-shadow: 0 10px 20px rgba(16, 33, 61, 0.15);
             backdrop-filter: blur(8px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
         }
 
         .app-squircle i {
@@ -175,6 +210,7 @@
         .app-link:hover .app-squircle {
             transform: scale(1.12);
             box-shadow: 0 16px 24px rgba(16, 33, 61, 0.22);
+            background: linear-gradient(155deg, rgba(255, 255, 255, 0.82), rgba(219, 232, 255, 0.42));
         }
 
         .app-link:hover .app-name {
@@ -182,37 +218,63 @@
             font-weight: 600;
         }
 
+        .app-link:hover {
+            filter: saturate(1.1);
+        }
+
         .logout-btn {
             background: linear-gradient(135deg, #ff6d79 0%, #ff4f73 45%, #ff7564 100%);
             box-shadow: 0 10px 20px rgba(255, 85, 113, 0.3);
+            margin-top: 0;
         }
 
         .logout-btn:hover {
             box-shadow: 0 14px 28px rgba(255, 85, 113, 0.36);
         }
 
-        .upload-card {
-            margin: 12px auto 20px;
-            width: min(440px, 100%);
-            padding: 16px;
-            border-radius: 18px;
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .upload-inline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            background: rgba(255, 255, 255, 0.28);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 24px rgba(32, 45, 80, 0.12);
+        }
+
+        .upload-card {
+            margin: 0;
+            width: auto;
+            padding: 0;
+            border-radius: 0;
+            border: none;
+            background: transparent;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
             text-align: left;
         }
 
         .upload-title {
-            margin: 0 0 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-primary);
+            display: none;
         }
 
         #file-input {
             margin-top: 0;
-            margin-bottom: 10px;
+            margin-bottom: 0;
+            max-width: 210px;
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         .upload-actions {
@@ -222,17 +284,78 @@
             flex-wrap: wrap;
         }
 
+        .upload-btn {
+            margin-top: 0;
+            padding-inline: 18px;
+            background: linear-gradient(135deg, #1f6fff 0%, #4f8cff 100%);
+        }
+
         #upload-status {
             margin: 0;
             font-size: 0.86rem;
             color: var(--text-secondary);
             min-height: 20px;
+            margin-top: 18px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .floating-orb {
+            position: absolute;
+            inset: auto auto 8% 8%;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 70%);
+            pointer-events: none;
+            filter: blur(6px);
+            animation: floatOrb 6s ease-in-out infinite;
+        }
+
+        @keyframes floatOrb {
+            0%, 100% {
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                transform: translateY(-12px) scale(1.06);
+            }
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .glass-panel,
+        .app-link,
+        .upload-inline,
+        #upload-status {
+            animation: fadeSlideUp 0.6s ease both;
         }
 
         @media (max-width: 560px) {
             #desktop-apps,
             #login-form-id {
                 padding: 28px 20px;
+            }
+
+            .desktop-topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .topbar-actions {
+                justify-content: flex-start;
             }
 
             .apps-grid {
@@ -242,63 +365,82 @@
     </style>
 </head>
 <body>
+    <div class="floating-orb"></div>
     <div id="login-form-id" class="glass-panel">
-        <h2>Login Portal</h2>
+        <h2>Portal Login</h2>
         <div class="input-group">
-            <input type="email" id="email" placeholder="Email">
+            <input type="email" id="email" placeholder="Email address">
             <input type="password" id="password" placeholder="Password">
         </div>
-        <button class="btn" onclick="login()">Masuk</button>
+        <button class="btn" onclick="login()">Sign In</button>
     </div>
 
     <div id="desktop-apps" class="glass-panel">
-        <h2>Selamat Datang di Planning Portal</h2>
-        <p class="subtitle">Pilih aplikasi untuk melanjutkan pekerjaan Anda.</p>
+        <div class="desktop-topbar">
+            <div class="hero-copy">
+                <div class="welcome-chip">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span id="welcome-note">Welcome</span>
+                </div>
+                <h2>Planning Workspace</h2>
+                <p class="subtitle">Access your operational tools, upload shared files, and continue your workflow from one modern dashboard.</p>
+            </div>
+
+            <div class="topbar-actions">
+                <div class="upload-card">
+                    <p class="upload-title">Upload Shared File</p>
+                    <div class="upload-inline">
+                        <input type="file" id="file-input">
+                        <button id="upload-btn" class="btn upload-btn" onclick="uploadFile()">Upload</button>
+                    </div>
+                </div>
+                <button class="btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <p id="upload-status"></p>
 
         <div class="apps-grid">
-            <a href="https://irhassha.github.io/Yard-Planning-Dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
+            <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
                 <div class="app-squircle">
                     <i class="fa-solid fa-warehouse"></i>
                 </div>
                 <span class="app-name">Yard Planning</span>
             </a>
 
-            <a href="https://irhassha.github.io/Replan-Slot-Analyzer/" target="_blank" rel="noopener noreferrer" class="app-link">
+            <a href="https://username.github.io/app-kedua/" target="_blank" rel="noopener noreferrer" class="app-link">
                 <div class="app-squircle">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
-                <span class="app-name">Data Vessel</span>
+                <span class="app-name">Vessel Data</span>
             </a>
         </div>
-
-        <div class="upload-card">
-            <p class="upload-title">Upload Shared File</p>
-            <input type="file" id="file-input">
-            <div class="upload-actions">
-                <button id="upload-btn" class="btn" onclick="uploadFile()">Upload File</button>
-                <p id="upload-status"></p>
-            </div>
-        </div>
-
-        <button class="btn logout-btn" onclick="logout()">Keluar</button>
     </div>
 
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = "https://ipkgtglrhnocatrqfsda.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0";
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginForm = document.getElementById('login-form-id');
         const desktopApps = document.getElementById('desktop-apps');
+        const welcomeNote = document.getElementById('welcome-note');
+
+        const getWelcomeName = (email = '') => {
+            const [, domainPart = 'User'] = email.split('@');
+            return domainPart || 'User';
+        };
 
         const updateAuthView = (session) => {
             if (session?.user) {
+                welcomeNote.textContent = `Welcome, ${getWelcomeName(session.user.email)}`;
                 loginForm.style.display = 'none';
                 desktopApps.style.display = 'block';
                 return;
             }
 
+            welcomeNote.textContent = 'Welcome';
             loginForm.style.display = 'block';
             desktopApps.style.display = 'none';
         };
@@ -314,7 +456,7 @@
             });
 
             if (error) {
-                alert("Login Gagal: " + error.message);
+                alert("Sign in failed: " + error.message);
             }
         };
 
@@ -330,11 +472,11 @@
             const { error } = await supabase.auth.signOut();
 
             if (error) {
-                alert("Gagal keluar: " + error.message);
+                alert("Sign out failed: " + error.message);
                 return;
             }
 
-            alert("Berhasil keluar!");
+            alert("Signed out successfully.");
         };
 
         window.uploadFile = async () => {
@@ -344,14 +486,14 @@
             const file = fileInput.files[0];
 
             if (!file) {
-                uploadStatus.textContent = 'Silakan pilih file terlebih dahulu.';
+                uploadStatus.textContent = 'Please choose a file first.';
                 return;
             }
 
             const uniqueFileName = `${Date.now()}_${file.name}`;
             uploadButton.disabled = true;
             uploadButton.textContent = 'Uploading...';
-            uploadStatus.textContent = 'Mengunggah file dan menyimpan metadata...';
+            uploadStatus.textContent = 'Uploading file and saving record...';
 
             try {
                 const { error: uploadError } = await supabase
@@ -372,12 +514,12 @@
                 }
 
                 fileInput.value = '';
-                uploadStatus.textContent = 'Upload berhasil.';
+                uploadStatus.textContent = 'Upload completed successfully.';
             } catch (error) {
-                uploadStatus.textContent = `Upload gagal: ${error.message}`;
+                uploadStatus.textContent = `Upload failed: ${error.message}`;
             } finally {
                 uploadButton.disabled = false;
-                uploadButton.textContent = 'Upload File';
+                uploadButton.textContent = 'Upload';
             }
         };
     </script>
