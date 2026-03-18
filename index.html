@@ -128,7 +128,7 @@
             justify-content: space-between;
             align-items: flex-start;
             gap: 18px;
-            margin-bottom: 26px;
+            margin-bottom: 18px;
         }
 
         .hero-copy {
@@ -359,10 +359,15 @@
 
         .content-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+            grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
             gap: 22px;
             align-items: start;
             margin-top: 26px;
+            padding: 22px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.42);
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 18px 34px rgba(16, 33, 61, 0.12);
         }
 
         .workspace-column {
@@ -370,13 +375,59 @@
             gap: 18px;
         }
 
+        .headline-rule {
+            height: 1px;
+            border: none;
+            margin: 18px 0 0;
+            background: linear-gradient(90deg, rgba(16, 33, 61, 0.05), rgba(16, 33, 61, 0.18), rgba(16, 33, 61, 0.05));
+        }
+
+        .pinned-banner {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-top: 18px;
+            padding: 16px 18px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(255, 189, 89, 0.18), rgba(255, 110, 110, 0.14));
+            border: 1px solid rgba(255, 145, 115, 0.35);
+            box-shadow: 0 12px 28px rgba(16, 33, 61, 0.1);
+        }
+
+        .pinned-banner-icon {
+            font-size: 1.2rem;
+        }
+
+        .pinned-banner-content {
+            min-width: 0;
+        }
+
+        .pinned-banner-label {
+            margin: 0 0 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .pinned-banner-text {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .message-board {
             display: none;
-            padding: 22px;
+            padding: 20px;
             border-radius: 24px;
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 14px 28px rgba(16, 33, 61, 0.14);
+            min-height: 100%;
         }
 
         .board-title {
@@ -400,6 +451,7 @@
         }
 
         .pinned-board {
+            display: none;
             margin-bottom: 14px;
             background: linear-gradient(135deg, rgba(255, 190, 100, 0.18), rgba(255, 106, 106, 0.12));
             border: 1px solid rgba(255, 140, 120, 0.35);
@@ -422,7 +474,8 @@
         }
 
         .chat-list {
-            max-height: 300px;
+            min-height: 420px;
+            max-height: 420px;
             overflow-y: auto;
             padding-right: 4px;
         }
@@ -602,12 +655,21 @@
                 </div>
                 <h2>Planning Workspace</h2>
                 <p class="subtitle">Access your operational tools, upload shared files, and continue your workflow from one modern dashboard.</p>
+                <hr class="headline-rule">
             </div>
 
             <div class="topbar-actions">
                 <button class="btn logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
+
+        <section id="pinned-banner" class="pinned-banner">
+            <div class="pinned-banner-icon">📌</div>
+            <div class="pinned-banner-content">
+                <p class="pinned-banner-label">Pinned message</p>
+                <p id="pinned-banner-text" class="pinned-banner-text">No pinned message yet.</p>
+            </div>
+        </section>
 
         <p id="upload-status"></p>
         <p class="session-note">For security, your session will automatically sign out after 3 hours.</p>
@@ -631,25 +693,25 @@
                 </div>
 
                 <div class="apps-grid">
-                    <a href="https://irhassha.github.io/Yard-Planning-Dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
+                    <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
                         <div class="app-squircle">
                             <i class="fa-solid fa-warehouse"></i>
                         </div>
                         <span class="app-name">Yard Planning</span>
                     </a>
 
-                    <a href="https://irhassha.github.io/Replan-Slot-Analyzer/" target="_blank" rel="noopener noreferrer" class="app-link">
+                    <a href="https://username.github.io/app-kedua/" target="_blank" rel="noopener noreferrer" class="app-link">
                         <div class="app-squircle">
                             <i class="fa-solid fa-chart-line"></i>
                         </div>
-                        <span class="app-name">Replan - Slot Analyzer</span>
+                        <span class="app-name">Vessel Data</span>
                     </a>
                 </div>
             </div>
 
             <section id="message-board" class="message-board">
-                <h3 class="board-title">📢 Global Messages</h3>
-                <p class="board-subtitle">Terminal Comms keeps important updates pinned while the latest 24-hour team messages stream below.</p>
+                <h3 class="board-title">💬 Live Messages</h3>
+                <p class="board-subtitle">Real-time terminal updates for the last 24 hours.</p>
 
                 <div class="board-panel pinned-board">
                     <p class="board-section-title"><span>📌</span> Pinned Messages</p>
@@ -678,14 +740,16 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = "https://ipkgtglrhnocatrqfsda.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0";
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginForm = document.getElementById('login-form-id');
         const desktopApps = document.getElementById('desktop-apps');
         const welcomeNote = document.getElementById('welcome-note');
         const fileNameLabel = document.getElementById('file-name');
         const messageBoard = document.getElementById('message-board');
+        const pinnedBanner = document.getElementById('pinned-banner');
+        const pinnedBannerText = document.getElementById('pinned-banner-text');
         const pinnedMessages = document.getElementById('pinned-messages');
         const chatMessages = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
@@ -694,7 +758,7 @@
         const AUTO_LOGOUT_MS = 3 * 60 * 60 * 1000;
         const LOGIN_TIME_KEY = 'planning_portal_login_time';
         let autoLogoutTimerId;
-        let messagesRefreshIntervalId = null;
+        let realtimeChannel = null;
 
         const getWelcomeName = (email = '') => {
             const [userPart = 'User'] = email.split('@');
@@ -749,27 +813,27 @@
         };
 
         const startMessagesAutoRefresh = () => {
-            if (messagesRefreshIntervalId) {
-                window.clearInterval(messagesRefreshIntervalId);
+            if (!realtimeChannel) {
+                realtimeChannel = supabaseClient
+                    .channel('pesan-portal-realtime')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'portal_messages' }, () => {
+                        if (messageBoard.style.display !== 'none') fetchMessages();
+                    }).subscribe();
             }
-
-            messagesRefreshIntervalId = window.setInterval(async () => {
-                if (messageBoard.style.display !== 'none') {
-                    await fetchMessages();
-                }
-            }, 15000);
         };
 
         const stopMessagesAutoRefresh = () => {
-            if (messagesRefreshIntervalId) {
-                window.clearInterval(messagesRefreshIntervalId);
-                messagesRefreshIntervalId = null;
+            if (realtimeChannel) {
+                supabaseClient.removeChannel(realtimeChannel);
+                realtimeChannel = null;
             }
         };
 
         const hideMessageBoard = () => {
             messageBoard.style.display = 'none';
             messageForm.classList.remove('is-visible');
+            pinnedBanner.style.display = 'none';
+            pinnedBannerText.textContent = 'No pinned message yet.';
             pinnedMessages.innerHTML = '';
             chatMessages.innerHTML = '';
             stopMessagesAutoRefresh();
@@ -805,8 +869,22 @@
                 return;
             }
 
-            renderMessageList(pinnedMessages, pinnedData || [], 'No pinned messages.');
-            renderMessageList(chatMessages, regularData || [], 'No messages in the last 24 hours.');
+            const pinnedItems = pinnedData || [];
+            const regularItems = regularData || [];
+
+            if (pinnedItems.length > 0) {
+                const latestPinned = pinnedItems[0];
+                pinnedBanner.style.display = 'flex';
+                pinnedBannerText.textContent = `${latestPinned.sender_name || 'Unknown'} • ${latestPinned.message || ''}`;
+                pinnedMessages.parentElement.style.display = 'block';
+            } else {
+                pinnedBanner.style.display = 'none';
+                pinnedBannerText.textContent = 'No pinned message yet.';
+                pinnedMessages.parentElement.style.display = 'none';
+            }
+
+            renderMessageList(pinnedMessages, pinnedItems, 'No pinned messages.');
+            renderMessageList(chatMessages, regularItems, 'No messages in the last 24 hours.');
         };
 
         const startAutoLogoutTimer = async (session) => {
