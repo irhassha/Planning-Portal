@@ -8,9 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
         :root {
             --glass-bg: rgba(255, 255, 255, 0.22);
@@ -110,6 +107,13 @@
             filter: brightness(1.05);
         }
 
+        .btn:disabled {
+            cursor: wait;
+            opacity: 0.7;
+            transform: none;
+            box-shadow: 0 8px 18px rgba(79, 116, 255, 0.2);
+        }
+
         #desktop-apps {
             display: none;
             padding: 34px 28px;
@@ -166,7 +170,6 @@
             font-weight: 500;
             color: var(--text-secondary);
             transition: color 0.3s ease, font-weight 0.3s ease;
-            text-align: center;
         }
 
         .app-link:hover .app-squircle {
@@ -188,10 +191,50 @@
             box-shadow: 0 14px 28px rgba(255, 85, 113, 0.36);
         }
 
+        .upload-card {
+            margin: 12px auto 20px;
+            width: min(440px, 100%);
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            text-align: left;
+        }
+
+        .upload-title {
+            margin: 0 0 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        #file-input {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #upload-status {
+            margin: 0;
+            font-size: 0.86rem;
+            color: var(--text-secondary);
+            min-height: 20px;
+        }
+
         @media (max-width: 560px) {
-            #desktop-apps, #login-form-id {
+            #desktop-apps,
+            #login-form-id {
                 padding: 28px 20px;
             }
+
             .apps-grid {
                 grid-template-columns: repeat(2, minmax(110px, 1fr));
             }
@@ -199,14 +242,13 @@
     </style>
 </head>
 <body>
-
     <div id="login-form-id" class="glass-panel">
         <h2>Login Portal</h2>
         <div class="input-group">
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="password" placeholder="Password">
         </div>
-        <button class="btn" onclick="handleLogin()">Masuk</button>
+        <button class="btn" onclick="login()">Masuk</button>
     </div>
 
     <div id="desktop-apps" class="glass-panel">
@@ -214,155 +256,130 @@
         <p class="subtitle">Pilih aplikasi untuk melanjutkan pekerjaan Anda.</p>
 
         <div class="apps-grid">
-            
-            <a href="https://irhassha.github.io/Yard-Planning-Dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
+            <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
                 <div class="app-squircle">
                     <i class="fa-solid fa-warehouse"></i>
                 </div>
                 <span class="app-name">Yard Planning</span>
             </a>
-            
-            <a href="https://irhassha.github.io/Replan-Slot-Analyzer/" target="_blank" rel="noopener noreferrer" class="app-link">
+
+            <a href="https://username.github.io/app-kedua/" target="_blank" rel="noopener noreferrer" class="app-link">
                 <div class="app-squircle">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
-                <span class="app-name">Replan Analyzer</span>
+                <span class="app-name">Data Vessel</span>
             </a>
-            
-            <a href="https://irhassha.github.io/Movins-Converter/" target="_blank" rel="noopener noreferrer" class="app-link">
-                <div class="app-squircle">
-                    <i class="fa-solid fa-file-export"></i> </div>
-                <span class="app-name">Movins Converter</span>
-            </a>
-            
-<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
-            <h3 style="font-size: 1rem; margin-bottom: 15px;">☁️ Upload Data Master</h3>
-            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                
-                <input type="file" id="fileInput" style="display: none;" onchange="document.getElementById('fileNameDisplay').innerText = this.files[0] ? this.files[0].name : 'Belum ada file dipilih'">
-                
-                <label for="fileInput" class="btn" style="background: rgba(255,255,255,0.3); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.5); cursor: pointer; padding: 10px 15px; margin-top: 0;">
-                    <i class="fa-solid fa-folder-open"></i> Pilih File
-                </label>
-                
-                <button class="btn" onclick="handleUpload()" style="padding: 10px 15px; margin-top: 0;">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload & Sinkron
-                </button>
-            </div>
-            <p id="fileNameDisplay" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">Belum ada file dipilih</p>
-        </div>
-    
         </div>
 
-        <button class="btn logout-btn" onclick="handleLogout()">Keluar</button>
+        <div class="upload-card">
+            <p class="upload-title">Upload Shared File</p>
+            <input type="file" id="file-input">
+            <div class="upload-actions">
+                <button id="upload-btn" class="btn" onclick="uploadFile()">Upload File</button>
+                <p id="upload-status"></p>
+            </div>
+        </div>
+
+        <button class="btn logout-btn" onclick="logout()">Keluar</button>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://ipkgtglrhnocatrqfsda.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0';
-        
-// Perbaikan: Menggunakan nama 'supabaseClient' agar tidak bentrok dengan sistem
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-    // Fungsi Cek Status Login Otomatis & Ganti Tampilan
-    async function updateUI() {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        const loginForm = document.getElementById('login-form-id');
-        const desktopApps = document.getElementById('desktop-apps');
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        if (user) {
-            // Jika user berhasil login
-            loginForm.style.display = 'none';
-            desktopApps.style.display = 'block';
-        } else {
-            // Jika belum login
-            loginForm.style.display = 'block';
-            desktopApps.style.display = 'none';
-        }
-    }
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAFmv0ZCMGyqEijtH7CGTy6gwih_jTwHC4",
+          authDomain: "planning-portal-88622.firebaseapp.com",
+          projectId: "planning-portal-88622",
+          storageBucket: "planning-portal-88622.firebasestorage.app",
+          messagingSenderId: "382209491506",
+          appId: "1:382209491506:web:442358253e523ec07c322b"
+        };
 
-    // Fungsi untuk Tombol Masuk
-    window.handleLogin = async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        if (!email || !password) {
-            alert("Mohon isi Email dan Password terlebih dahulu!");
-            return;
-        }
+        // Fungsi Login
+        window.login = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch(error => alert("Login Gagal: " + error.message));
+        };
 
-        // Proses login ke Supabase
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password,
+        // Cek Status Login Otomatis
+        onAuthStateChanged(auth, (user) => {
+            const loginForm = document.getElementById('login-form-id');
+            const desktopApps = document.getElementById('desktop-apps');
+
+            if (user) {
+                // Jika sudah login
+                loginForm.style.display = 'none';
+                desktopApps.style.display = 'block';
+            } else {
+                // Jika belum login / logout
+                loginForm.style.display = 'block';
+                desktopApps.style.display = 'none';
+            }
         });
 
-        if (error) {
-            alert("Login Gagal: " + error.message);
-        } else {
-            // Jika berhasil, perbarui tampilan ke dashboard
-            updateUI();
-        }
-    };
+        // Fungsi Logout
+        window.logout = () => {
+            signOut(auth).then(() => {
+                alert("Berhasil keluar!");
+            });
+        };
 
-    // Fungsi untuk Tombol Keluar
-    window.handleLogout = async () => {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) {
-            alert("Gagal keluar: " + error.message);
-        } else {
-            alert("Berhasil keluar!");
-            updateUI(); 
-        }
-    };
-
-    // Jalankan pengecekan login saat web pertama kali dibuka
-    updateUI();
-
-                // Fungsi untuk Upload File & Simpan Link ke Database
-        window.handleUpload = async () => {
-            const fileInput = document.getElementById('fileInput');
+        window.uploadFile = async () => {
+            const fileInput = document.getElementById('file-input');
+            const uploadButton = document.getElementById('upload-btn');
+            const uploadStatus = document.getElementById('upload-status');
             const file = fileInput.files[0];
-            
+
             if (!file) {
-                alert("Pilih file terlebih dahulu!");
+                uploadStatus.textContent = 'Silakan pilih file terlebih dahulu.';
                 return;
             }
 
-            // Bikin nama unik agar tidak bentrok jika nama file sama
-            const fileName = `${Date.now()}_${file.name}`;
-            alert("Sedang mengupload... Mohon tunggu sebentar.");
+            const uniqueFileName = `${Date.now()}_${file.name}`;
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'Uploading...';
+            uploadStatus.textContent = 'Mengunggah file dan menyimpan metadata...';
 
-            // 1. Upload ke Storage Bucket 'uploads'
-            const { error: uploadError } = await supabaseClient.storage
-                .from('uploads')
-                .upload(fileName, file);
+            try {
+                const { error: uploadError } = await supabase
+                    .storage
+                    .from('uploads')
+                    .upload(uniqueFileName, file, { upsert: false });
 
-            if (uploadError) {
-                alert("Gagal upload: " + uploadError.message);
-                return;
-            }
+                if (uploadError) {
+                    throw uploadError;
+                }
 
-            // 2. Ambil Link Publik file tersebut
-            const { data: urlData } = supabaseClient.storage
-                .from('uploads')
-                .getPublicUrl(fileName);
+                const { error: insertError } = await supabase
+                    .from('shared_files')
+                    .insert({ url: uniqueFileName });
 
-            // 3. Simpan Link-nya ke tabel 'shared_files' di database
-            const { error: dbError } = await supabaseClient.from('shared_files')
-                .insert([
-                    { name: file.name, url: urlData.publicUrl }
-                ]);
+                if (insertError) {
+                    throw insertError;
+                }
 
-            if (dbError) {
-                alert("Gagal simpan link: " + dbError.message);
-            } else {
-                alert("✅ Mantap! File berhasil diupload dan tersinkron ke semua aplikasi.");
-                fileInput.value = ""; // Reset form
-                document.getElementById('fileNameDisplay').innerText = "Belum ada file dipilih";
+                fileInput.value = '';
+                uploadStatus.textContent = 'Upload berhasil.';
+            } catch (error) {
+                uploadStatus.textContent = `Upload gagal: ${error.message}`;
+            } finally {
+                uploadButton.disabled = false;
+                uploadButton.textContent = 'Upload File';
             }
         };
-        
-</script>
+    </script>
 </body>
 </html>
