@@ -245,27 +245,34 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 24px rgba(32, 45, 80, 0.12);
+            flex-wrap: wrap;
         }
 
         .upload-card {
             margin: 0;
-            width: auto;
-            padding: 0;
-            border-radius: 0;
-            border: none;
-            background: transparent;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.38);
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             text-align: left;
+            box-shadow: 0 14px 28px rgba(16, 33, 61, 0.12);
         }
 
         .upload-title {
-            display: none;
+            display: block;
+            margin: 0 0 6px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .upload-subtitle {
+            margin: 0 0 14px;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
 
         .file-picker {
@@ -326,6 +333,10 @@
             background: linear-gradient(135deg, #1f6fff 0%, #4f8cff 100%);
         }
 
+        #upload-btn {
+            display: none;
+        }
+
         #upload-status {
             margin: 0;
             font-size: 0.86rem;
@@ -352,6 +363,11 @@
             gap: 22px;
             align-items: start;
             margin-top: 26px;
+        }
+
+        .workspace-column {
+            display: grid;
+            gap: 18px;
         }
 
         .message-board {
@@ -589,8 +605,18 @@
             </div>
 
             <div class="topbar-actions">
+                <button class="btn logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <p id="upload-status"></p>
+        <p class="session-note">For security, your session will automatically sign out after 3 hours.</p>
+
+        <div class="content-layout">
+            <div class="workspace-column">
                 <div class="upload-card">
-                    <p class="upload-title">Upload Shared File</p>
+                    <p class="upload-title">Shared Master File</p>
+                    <p class="upload-subtitle">Choose a file and it will upload automatically while replacing the previous shared file.</p>
                     <div class="upload-inline">
                         <label class="file-picker" for="file-input">
                             <input type="file" id="file-input" onchange="handleFileSelection()">
@@ -603,28 +629,22 @@
                         <button id="upload-btn" class="btn upload-btn" onclick="handleUpload()">Upload</button>
                     </div>
                 </div>
-                <button class="btn logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
 
-        <p id="upload-status"></p>
-        <p class="session-note">For security, your session will automatically sign out after 3 hours.</p>
+                <div class="apps-grid">
+                    <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
+                        <div class="app-squircle">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </div>
+                        <span class="app-name">Yard Planning</span>
+                    </a>
 
-        <div class="content-layout">
-            <div class="apps-grid">
-                <a href="https://username.github.io/yard-planning-dashboard/" target="_blank" rel="noopener noreferrer" class="app-link">
-                    <div class="app-squircle">
-                        <i class="fa-solid fa-warehouse"></i>
-                    </div>
-                    <span class="app-name">Yard Planning</span>
-                </a>
-
-                <a href="https://username.github.io/app-kedua/" target="_blank" rel="noopener noreferrer" class="app-link">
-                    <div class="app-squircle">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                    <span class="app-name">Vessel Data</span>
-                </a>
+                    <a href="https://username.github.io/app-kedua/" target="_blank" rel="noopener noreferrer" class="app-link">
+                        <div class="app-squircle">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <span class="app-name">Vessel Data</span>
+                    </a>
+                </div>
             </div>
 
             <section id="message-board" class="message-board">
@@ -658,8 +678,8 @@
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-        const SUPABASE_URL = "https://ipkgtglrhnocatrqfsda.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0";
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const loginForm = document.getElementById('login-form-id');
         const desktopApps = document.getElementById('desktop-apps');
@@ -674,7 +694,7 @@
         const AUTO_LOGOUT_MS = 3 * 60 * 60 * 1000;
         const LOGIN_TIME_KEY = 'planning_portal_login_time';
         let autoLogoutTimerId;
-        let messagesChannel = null;
+        let messagesRefreshIntervalId = null;
 
         const getWelcomeName = (email = '') => {
             const [userPart = 'User'] = email.split('@');
@@ -728,55 +748,23 @@
             });
         };
 
-        const appendRealtimeMessage = (messageEntry) => {
-            if (!messageBoard || messageBoard.style.display === 'none') {
-                return;
+        const startMessagesAutoRefresh = () => {
+            if (messagesRefreshIntervalId) {
+                window.clearInterval(messagesRefreshIntervalId);
             }
 
-            const createdAt = new Date(messageEntry.created_at).getTime();
-            const within24Hours = createdAt >= (Date.now() - 24 * 60 * 60 * 1000);
-
-            if (messageEntry.is_pinned) {
-                const emptyState = pinnedMessages.querySelector('.empty-state');
-                if (emptyState) {
-                    emptyState.remove();
+            messagesRefreshIntervalId = window.setInterval(async () => {
+                if (messageBoard.style.display !== 'none') {
+                    await fetchMessages();
                 }
-
-                pinnedMessages.prepend(createMessageElement(messageEntry));
-                return;
-            }
-
-            if (!within24Hours) {
-                return;
-            }
-
-            const emptyState = chatMessages.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-
-            chatMessages.prepend(createMessageElement(messageEntry));
-
-            while (chatMessages.children.length > 20) {
-                chatMessages.removeChild(chatMessages.lastElementChild);
-            }
+            }, 15000);
         };
 
-        const subscribeToMessages = () => {
-            if (messagesChannel) {
-                supabaseClient.removeChannel(messagesChannel);
+        const stopMessagesAutoRefresh = () => {
+            if (messagesRefreshIntervalId) {
+                window.clearInterval(messagesRefreshIntervalId);
+                messagesRefreshIntervalId = null;
             }
-
-            messagesChannel = supabaseClient
-                .channel('custom-all-channel')
-                .on(
-                    'postgres_changes',
-                    { event: 'INSERT', schema: 'public', table: 'portal_messages' },
-                    (payload) => {
-                        appendRealtimeMessage(payload.new);
-                    }
-                )
-                .subscribe();
         };
 
         const hideMessageBoard = () => {
@@ -784,11 +772,7 @@
             messageForm.classList.remove('is-visible');
             pinnedMessages.innerHTML = '';
             chatMessages.innerHTML = '';
-
-            if (messagesChannel) {
-                supabaseClient.removeChannel(messagesChannel);
-                messagesChannel = null;
-            }
+            stopMessagesAutoRefresh();
         };
 
         const fetchMessages = async () => {
@@ -874,6 +858,10 @@
             const fileInput = document.getElementById('file-input');
             const file = fileInput.files?.[0];
             fileNameLabel.textContent = file ? file.name : 'No file selected';
+
+            if (file) {
+                void window.handleUpload();
+            }
         };
 
         // Sign-in flow
@@ -900,7 +888,7 @@
 
         if (sessionData.session?.user) {
             await fetchMessages();
-            subscribeToMessages();
+            startMessagesAutoRefresh();
         }
 
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
@@ -918,7 +906,7 @@
 
             if (session?.user) {
                 await fetchMessages();
-                subscribeToMessages();
+                startMessagesAutoRefresh();
             }
         });
 
