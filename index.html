@@ -285,56 +285,56 @@
 
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
-        const SUPABASE_URL = "https://ipkgtglrhnocatrqfsda.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwa2d0Z2xyaG5vY2F0cnFmc2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MjIxNzMsImV4cCI6MjA4OTI5ODE3M30.tHQ6IzJEMoQicDPfhgGIYPCk-6fmgJlHGv1VvsAHrx0";
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+        const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const loginForm = document.getElementById('login-form-id');
+        const desktopApps = document.getElementById('desktop-apps');
 
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-          apiKey: "AIzaSyAFmv0ZCMGyqEijtH7CGTy6gwih_jTwHC4",
-          authDomain: "planning-portal-88622.firebaseapp.com",
-          projectId: "planning-portal-88622",
-          storageBucket: "planning-portal-88622.firebasestorage.app",
-          messagingSenderId: "382209491506",
-          appId: "1:382209491506:web:442358253e523ec07c322b"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        // Fungsi Login
-        window.login = () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            signInWithEmailAndPassword(auth, email, pass)
-                .catch(error => alert("Login Gagal: " + error.message));
-        };
-
-        // Cek Status Login Otomatis
-        onAuthStateChanged(auth, (user) => {
-            const loginForm = document.getElementById('login-form-id');
-            const desktopApps = document.getElementById('desktop-apps');
-
-            if (user) {
-                // Jika sudah login
+        const updateAuthView = (session) => {
+            if (session?.user) {
                 loginForm.style.display = 'none';
                 desktopApps.style.display = 'block';
-            } else {
-                // Jika belum login / logout
-                loginForm.style.display = 'block';
-                desktopApps.style.display = 'none';
+                return;
             }
+
+            loginForm.style.display = 'block';
+            desktopApps.style.display = 'none';
+        };
+
+        // Fungsi Login
+        window.login = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password: pass
+            });
+
+            if (error) {
+                alert("Login Gagal: " + error.message);
+            }
+        };
+
+        const { data: sessionData } = await supabase.auth.getSession();
+        updateAuthView(sessionData.session);
+
+        supabase.auth.onAuthStateChange((_event, session) => {
+            updateAuthView(session);
         });
 
         // Fungsi Logout
-        window.logout = () => {
-            signOut(auth).then(() => {
-                alert("Berhasil keluar!");
-            });
+        window.logout = async () => {
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+                alert("Gagal keluar: " + error.message);
+                return;
+            }
+
+            alert("Berhasil keluar!");
         };
 
         window.uploadFile = async () => {
